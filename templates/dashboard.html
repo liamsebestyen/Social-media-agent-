@@ -1,0 +1,676 @@
+<title>Liam's Creator Report</title>
+<style>
+  :root {
+    --paper: #F7F8FA;
+    --card: #FFFFFF;
+    --ink: #171B26;
+    --ink-2: #4A5164;
+    --ink-3: #7C8398;
+    --line: #E3E6EC;
+    --accent: #3A56E4;
+    --accent-soft: #E7EBFC;
+    --good: #1E7F4F;
+    --good-soft: #E2F2E9;
+    --warn: #B07A00;
+    --warn-soft: #F7EEDB;
+    --bad: #C03535;
+    --bad-soft: #F9E6E6;
+    --display: 'Charter', 'Bitstream Charter', 'Iowan Old Style', Georgia, serif;
+    --ui: 'Avenir Next', 'Avenir', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+    --shadow: 0 1px 2px rgba(23, 27, 38, 0.05), 0 4px 16px rgba(23, 27, 38, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #12151D;
+      --card: #1A1E29;
+      --ink: #E8EAF0;
+      --ink-2: #A9AFC0;
+      --ink-3: #767D91;
+      --line: #2A2F3D;
+      --accent: #5F76E8;
+      --accent-soft: #232A45;
+      --good: #2C9464;
+      --good-soft: #1B2E26;
+      --warn: #B08D15;
+      --warn-soft: #2E2913;
+      --bad: #DB4A55;
+      --bad-soft: #341C1F;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #F7F8FA; --card: #FFFFFF; --ink: #171B26; --ink-2: #4A5164;
+    --ink-3: #7C8398; --line: #E3E6EC; --accent: #3A56E4; --accent-soft: #E7EBFC;
+    --good: #1E7F4F; --good-soft: #E2F2E9; --warn: #B07A00; --warn-soft: #F7EEDB;
+    --bad: #C03535; --bad-soft: #F9E6E6;
+    --shadow: 0 1px 2px rgba(23, 27, 38, 0.05), 0 4px 16px rgba(23, 27, 38, 0.05);
+  }
+  :root[data-theme="dark"] {
+    --paper: #12151D; --card: #1A1E29; --ink: #E8EAF0; --ink-2: #A9AFC0;
+    --ink-3: #767D91; --line: #2A2F3D; --accent: #5F76E8; --accent-soft: #232A45;
+    --good: #2C9464; --good-soft: #1B2E26; --warn: #B08D15; --warn-soft: #2E2913;
+    --bad: #DB4A55; --bad-soft: #341C1F;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--ui);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 28px 24px 64px; }
+
+  /* ---------- header ---------- */
+  header {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px;
+  }
+  .monogram {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-family: var(--display); font-size: 26px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .id-block { flex: 1 1 auto; min-width: 200px; }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  h1 {
+    font-family: var(--display); font-size: 26px; font-weight: 700;
+    margin: 2px 0 0; line-height: 1.2; text-wrap: balance;
+  }
+  h1 .verified { color: var(--accent); font-size: 18px; vertical-align: 2px; }
+  .header-stats { display: flex; gap: 28px; text-align: right; }
+  .header-stat .num {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 22px; font-weight: 600; display: block; line-height: 1.2;
+  }
+  .header-stat .lbl { font-size: 12px; color: var(--ink-3); }
+  .report-date { width: 100%; font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+
+  /* ---------- layout ---------- */
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) 372px; gap: 24px; }
+  @media (max-width: 940px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  section.card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); padding: 20px 22px; margin-bottom: 24px;
+  }
+  section.card > h2 {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0 0 16px;
+  }
+
+  /* ---------- grade heroes ---------- */
+  .grades { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  @media (max-width: 640px) { .grades { grid-template-columns: 1fr; } }
+  .grade-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); padding: 20px 22px;
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .grade-letter {
+    font-family: var(--display); font-size: 88px; font-weight: 700;
+    line-height: 0.9; min-width: 96px; text-align: center; flex: none;
+    padding: 12px 8px 16px; border-radius: 10px;
+  }
+  .grade-letter small { display: block; font-family: var(--mono); font-size: 12px; font-weight: 400; margin-top: 10px; }
+  .g-good  { color: var(--good);   background: var(--good-soft); }
+  .g-mid   { color: var(--accent); background: var(--accent-soft); }
+  .g-warn  { color: var(--warn);   background: var(--warn-soft); }
+  .g-bad   { color: var(--bad);    background: var(--bad-soft); }
+  .grade-body { flex: 1; min-width: 0; }
+  .grade-body h2 {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3); margin: 0 0 4px;
+  }
+  .grade-line { font-size: 14px; color: var(--ink-2); margin: 0 0 12px; }
+  .component { margin-bottom: 9px; }
+  .component .row1 {
+    display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 3px;
+  }
+  .component .row1 .cscore { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .component .bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .component .bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+  .component .detail { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+
+  /* ---------- stat tiles ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .tile {
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+    background: var(--paper);
+  }
+  .tile .num {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 20px; font-weight: 600; display: block; line-height: 1.25;
+  }
+  .tile .num .delta-up { color: var(--good); font-size: 13px; }
+  .tile .num .delta-down { color: var(--bad); font-size: 13px; }
+  .tile .lbl { font-size: 11.5px; color: var(--ink-3); }
+
+  /* ---------- post list ---------- */
+  .post-row {
+    display: grid; grid-template-columns: 74px minmax(0, 1fr) 150px; gap: 12px;
+    align-items: center; padding: 9px 0; border-top: 1px solid var(--line);
+  }
+  .post-row:first-of-type { border-top: none; }
+  .post-date { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+  .post-main { min-width: 0; }
+  .post-cap {
+    font-size: 13.5px; display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 4px; min-width: 0;
+  }
+  .post-cap .cap-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .post-cap .chip { flex: none; }
+  .post-cap a { text-decoration: none; }
+  .post-cap a:hover { text-decoration: underline; color: var(--accent); }
+  .chip {
+    display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; border-radius: 20px; padding: 1px 8px; vertical-align: 1px;
+  }
+  .chip-week { background: var(--accent-soft); color: var(--accent); }
+  .chip-deal { background: var(--good-soft); color: var(--good); }
+  .post-bar-track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .post-bar-track i { display: block; height: 100%; background: var(--accent); border-radius: 4px 0 0 4px; }
+  .post-nums {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px;
+    color: var(--ink-2); text-align: right; white-space: nowrap;
+  }
+  @media (max-width: 640px) {
+    .post-row { grid-template-columns: 48px minmax(0, 1fr); row-gap: 4px; }
+    .post-nums { grid-column: 2; text-align: left; }
+  }
+  .footnote { font-size: 11.5px; color: var(--ink-3); margin: 12px 0 0; }
+
+  /* ---------- sparkline ---------- */
+  .spark-wrap { position: relative; }
+  .spark-empty {
+    border: 1px dashed var(--line); border-radius: 8px; padding: 18px;
+    font-size: 13px; color: var(--ink-2); text-align: center;
+  }
+  .spark-empty .big {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 26px; font-weight: 600; color: var(--ink); display: block; margin-bottom: 2px;
+  }
+
+  /* ---------- inbox ---------- */
+  .inbox-note {
+    border: 1px dashed var(--line); border-radius: 8px; padding: 14px 16px;
+    font-size: 13px; color: var(--ink-2);
+  }
+  .inbox-note strong { color: var(--ink); }
+  .email {
+    padding: 10px 0; border-top: 1px solid var(--line);
+  }
+  .email:first-child { border-top: none; }
+  .email .from { font-size: 13px; font-weight: 600; display: flex; gap: 8px; align-items: baseline; }
+  .email .from .when { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-3); margin-left: auto; flex: none; }
+  .email .subj { font-size: 13px; margin: 1px 0; }
+  .email .snip {
+    font-size: 12px; color: var(--ink-3); display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .deal-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0;
+    border-top: 1px solid var(--line);
+  }
+  .deal-row:first-child { border-top: none; }
+  .deal-info { flex: 1; min-width: 0; }
+  .deal-info .t { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .deal-info .s { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .deal-btn {
+    font-family: var(--ui); font-size: 11.5px; font-weight: 600; flex: none;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+    border-radius: 20px; padding: 3px 11px; cursor: pointer;
+  }
+  .deal-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .deal-btn.closed { background: var(--good-soft); border-color: transparent; color: var(--good); }
+  .stale-note { font-size: 11px; color: var(--ink-3); margin-top: 10px; }
+
+  .skel { height: 12px; border-radius: 6px; background: var(--line); margin: 12px 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .skel { animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: 0.45; } }
+  }
+
+  /* ---------- tooltip ---------- */
+  #tip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--ink); color: var(--paper); font-size: 12px;
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    padding: 5px 9px; border-radius: 6px; white-space: pre; max-width: 300px;
+  }
+  footer.src {
+    font-size: 11.5px; color: var(--ink-3); border-top: 1px solid var(--line);
+    padding-top: 14px; margin-top: 8px;
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="monogram" aria-hidden="true">L</div>
+    <div class="id-block">
+      <div class="eyebrow">Daily creator report</div>
+      <h1 id="acct-name">@liam.codez <span class="verified" title="Verified">✔</span></h1>
+    </div>
+    <div class="header-stats">
+      <div class="header-stat"><span class="num" id="hs-followers">—</span><span class="lbl">followers</span></div>
+      <div class="header-stat"><span class="num" id="hs-posts">—</span><span class="lbl">posts</span></div>
+    </div>
+    <div class="report-date" id="report-date"></div>
+  </header>
+
+  <div class="grades" id="grades"></div>
+
+  <div class="grid">
+    <div class="col-main">
+      <section class="card">
+        <h2>This week on Instagram</h2>
+        <div class="tiles" id="week-tiles"></div>
+        <div id="post-list"></div>
+        <p class="footnote" id="post-footnote"></p>
+      </section>
+
+      <section class="card">
+        <h2>This month · growth</h2>
+        <div class="tiles" id="month-tiles"></div>
+        <div class="spark-wrap" id="spark"></div>
+      </section>
+    </div>
+
+    <aside class="col-side">
+      <section class="card">
+        <h2>Overnight inbox</h2>
+        <div id="inbox-body"><div class="skel" style="width:80%"></div><div class="skel" style="width:65%"></div><div class="skel" style="width:72%"></div></div>
+      </section>
+
+      <section class="card">
+        <h2>Brand deals</h2>
+        <div class="tiles" id="deal-tiles"></div>
+        <div id="deal-list"></div>
+        <p class="stale-note" id="deal-note"></p>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="src" id="src-note"></footer>
+</div>
+<div id="tip" role="presentation"></div>
+
+<script>
+const DASH = __DASH_DATA__;
+
+/* ================= utilities ================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (n) => n == null ? "—" : Number(n).toLocaleString("en-US");
+const compact = (n) => {
+  if (n == null) return "—";
+  if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1e4) return (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K";
+  return num(n);
+};
+function gradeClass(g) {
+  if (g[0] === "A") return "g-good";
+  if (g[0] === "B") return "g-mid";
+  if (g[0] === "C") return "g-warn";
+  return "g-bad";
+}
+
+/* shared tooltip */
+const tip = $("tip");
+function bindTip(el, text) {
+  el.addEventListener("pointerenter", () => { tip.textContent = text; tip.style.display = "block"; });
+  el.addEventListener("pointermove", (e) => {
+    const pad = 12;
+    tip.style.left = Math.min(e.clientX + pad, innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = Math.min(e.clientY + pad, innerHeight - tip.offsetHeight - 8) + "px";
+  });
+  el.addEventListener("pointerleave", () => { tip.style.display = "none"; });
+}
+
+/* ================= header + grades ================= */
+$("hs-followers").textContent = num(DASH.profile.followers);
+$("hs-posts").textContent = num(DASH.profile.total_posts);
+const gen = new Date(DASH.generated_at);
+$("report-date").textContent =
+  gen.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
+  " · stats refreshed " + gen.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+function gradeCard(title, w, blurb) {
+  const comps = w.components.map((c) => `
+    <div class="component">
+      <div class="row1"><span>${esc(c.label)}</span><span class="cscore">${c.score}/100</span></div>
+      <div class="bar"><i style="width:${c.score}%"></i></div>
+      <div class="detail">${esc(c.detail)}</div>
+    </div>`).join("");
+  return `
+  <div class="grade-card">
+    <div class="grade-letter ${gradeClass(w.grade)}">${esc(w.grade)}<small>${w.score}/100</small></div>
+    <div class="grade-body">
+      <h2>${esc(title)}</h2>
+      <p class="grade-line">${esc(blurb)}</p>
+      ${comps}
+    </div>
+  </div>`;
+}
+function blurbFor(w, label) {
+  const bits = [`${w.posts} post${w.posts === 1 ? "" : "s"}`, `${num(w.likes + w.comments)} engagements`];
+  if (w.growth_abs != null) bits.push(`${w.growth_abs >= 0 ? "+" : ""}${num(w.growth_abs)} followers`);
+  return `${label}: ` + bits.join(" · ");
+}
+$("grades").innerHTML =
+  gradeCard("This week", DASH.week, blurbFor(DASH.week, "Last 7 days")) +
+  gradeCard("This month", DASH.month, blurbFor(DASH.month, "Last 30 days"));
+
+/* ================= week tiles + posts ================= */
+function tile(numHtml, lbl) { return `<div class="tile"><span class="num">${numHtml}</span><span class="lbl">${esc(lbl)}</span></div>`; }
+const wk = DASH.week;
+$("week-tiles").innerHTML =
+  tile(num(wk.posts), "posts") +
+  tile(compact(wk.likes), "likes") +
+  tile(num(wk.comments), "comments") +
+  tile(wk.views ? compact(wk.views) : "n/a", "plays") +
+  tile(wk.er_pct + "%", "engagement rate");
+
+const monthPosts = DASH.recent_posts.filter((p) => p.in_month);
+const shown = monthPosts.length ? monthPosts : DASH.recent_posts.slice(0, 6);
+const maxEng = Math.max(...shown.map((p) => p.likes + p.comments), 1);
+$("post-list").innerHTML = shown.map((p) => {
+  const eng = p.likes + p.comments;
+  const cap = p.caption || "(no caption)";
+  const link = `<span class="cap-text">` +
+    (p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(cap)}</a>` : esc(cap)) +
+    `</span>`;
+  return `
+  <div class="post-row" data-tip="${esc(p.date)}\n${num(p.likes)} likes · ${num(p.comments)} comments${p.views ? " · " + num(p.views) + " plays" : ""}">
+    <span class="post-date">${esc(p.date.slice(5))}</span>
+    <div class="post-main">
+      <div class="post-cap">${link} ${p.in_week ? '<span class="chip chip-week">this week</span>' : ""}</div>
+      <div class="post-bar-track"><i style="width:${Math.max(2, Math.round(eng / maxEng * 100))}%"></i></div>
+    </div>
+    <span class="post-nums">${compact(p.likes)} ♥ · ${num(p.comments)} 💬</span>
+  </div>`;
+}).join("");
+document.querySelectorAll(".post-row").forEach((r) => bindTip(r, r.dataset.tip));
+$("post-footnote").textContent =
+  monthPosts.length
+    ? "Bars compare likes + comments across the last 30 days of posts. Instagram's public API hides play counts on the newest reels."
+    : "No posts in the last 30 days — showing the most recent posts instead.";
+
+/* ================= month tiles + sparkline ================= */
+const mo = DASH.month;
+const growthHtml = mo.growth_abs == null ? "—"
+  : `<span class="${mo.growth_abs >= 0 ? "delta-up" : "delta-down"}">${mo.growth_abs >= 0 ? "▲" : "▼"} ${num(Math.abs(mo.growth_abs))}</span>`;
+$("month-tiles").innerHTML =
+  tile(num(mo.posts), "posts (30d)") +
+  tile(compact(mo.likes + mo.comments), "engagements") +
+  tile(mo.er_pct + "%", "engagement rate") +
+  tile(growthHtml, "follower growth");
+
+(function sparkline() {
+  const hist = DASH.history;
+  const el = $("spark");
+  if (hist.length < 2) {
+    el.innerHTML = `<div class="spark-empty">
+      <span class="big">${num(hist[0]?.followers)}</span>
+      followers · day ${hist.length} of tracking — the growth curve draws itself here as daily snapshots accumulate.
+    </div>`;
+    return;
+  }
+  const W = 640, H = 120, P = 8;
+  const xs = hist.map((_, i) => P + i * (W - 2 * P) / (hist.length - 1));
+  const vals = hist.map((h) => h.followers);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const ys = vals.map((v) => hi === lo ? H / 2 : H - P - (v - lo) * (H - 2 * P) / (hi - lo));
+  const line = xs.map((x, i) => `${i ? "L" : "M"}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(" ");
+  const area = `${line} L${xs[xs.length - 1].toFixed(1)},${H - 2} L${xs[0].toFixed(1)},${H - 2} Z`;
+  const last = hist.length - 1;
+  el.innerHTML = `
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img"
+       aria-label="Follower count over ${hist.length} days">
+    <path d="${area}" fill="var(--accent-soft)"></path>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"></path>
+    <circle cx="${xs[last]}" cy="${ys[last]}" r="4" fill="var(--accent)"></circle>
+    ${xs.map((x, i) => `<rect x="${x - (W / hist.length) / 2}" y="0" width="${W / hist.length}" height="${H}"
+        fill="transparent" data-i="${i}"></rect>`).join("")}
+  </svg>
+  <p class="footnote">Followers, one snapshot per day since tracking began (${esc(hist[0].date)}).</p>`;
+  el.querySelectorAll("rect").forEach((r) => {
+    const h = hist[+r.dataset.i];
+    bindTip(r, `${h.date}\n${num(h.followers)} followers`);
+  });
+})();
+
+/* ================= source note ================= */
+$("src-note").textContent =
+  "Instagram stats come from the public profile API for @" + DASH.profile.username +
+  " and refresh once a day. Email is read live from your Gmail connector each time you open this page — nothing is stored. " +
+  "Grades weigh posting cadence, engagement rate, and follower growth.";
+
+/* ================= Gmail: overnight inbox + deals ================= */
+const GMAIL = "Gmail";
+const DEAL_WORDS = /collab|colab|partner|sponsor|brand deal|ambassador|paid promo|affiliate|rate card|promo code|ugc|influencer|campaign|budget for/i;
+const BULK_FROM = /no-?reply|notification|newsletter|updates@|marketing@|mailer|donotreply|automated/i;
+const LS_KEY = "liam-dash-closed-deals";
+
+function loadClosed() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch { return []; } }
+function saveClosed(v) { try { localStorage.setItem(LS_KEY, JSON.stringify(v)); } catch {} }
+
+function inboxNote(html) { $("inbox-body").innerHTML = `<div class="inbox-note">${html}</div>`; }
+function dealNote(html) { $("deal-list").innerHTML = `<div class="inbox-note">${html}</div>`; }
+
+const ERROR_COPY = {
+  server_not_connected: "<strong>Connect Gmail</strong> to see overnight email here. In claude.ai: Settings → Connectors → add <strong>Gmail</strong>, then reload this page.",
+  needs_reauth: "Gmail needs to be reconnected — claude.ai Settings → Connectors → <strong>Reconnect Gmail</strong>, then reload.",
+  selection_required: "You have more than one Gmail connector — pick one when claude.ai prompts you, then reload.",
+  approval_required: "Your org requires approval for Gmail access from pages, so email can't load here.",
+  blocked_by_policy: "Gmail access from pages is blocked by your org's policy.",
+  not_granted: "Email loads when this page runs inside claude.ai with connector access granted.",
+  capability_disabled: "Email loads when this page runs inside claude.ai with connector access granted.",
+  not_in_manifest: "This page's Gmail permissions don't match your connector's tools — ask Claude to re-publish the dashboard.",
+};
+function copyFor(e) {
+  return ERROR_COPY[e && e.code] ||
+    "Couldn't reach Gmail just now (" + esc(e && e.code || "unknown") + "). Reload to try again.";
+}
+
+/* Pull a usable message array out of whatever shape the connector returns. */
+function extractMessages(payload) {
+  if (payload == null) return [];
+  if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch { return []; } }
+  if (Array.isArray(payload)) return payload.filter((m) => typeof m === "object");
+  for (const k of ["messages", "threads", "emails", "results", "items", "data"]) {
+    if (Array.isArray(payload[k])) return payload[k].filter((m) => typeof m === "object");
+  }
+  for (const k of Object.keys(payload)) {
+    if (Array.isArray(payload[k]) && payload[k].length && typeof payload[k][0] === "object"
+        && ("subject" in payload[k][0] || "snippet" in payload[k][0] || "from" in payload[k][0])) {
+      return payload[k];
+    }
+  }
+  return [];
+}
+const pick = (m, keys) => { for (const k of keys) { if (m[k] != null && m[k] !== "") return m[k]; } return ""; };
+function normMsg(m) {
+  const fromRaw = String(pick(m, ["from", "sender", "From", "from_email", "author"]));
+  const nameMatch = fromRaw.match(/^"?([^"<]+)"?\s*</);
+  return {
+    from: (nameMatch ? nameMatch[1].trim() : fromRaw.replace(/<.*>/, "").trim()) || fromRaw || "Unknown sender",
+    fromRaw,
+    subject: String(pick(m, ["subject", "Subject", "title"])) || "(no subject)",
+    snippet: String(pick(m, ["snippet", "preview", "body_snippet", "summary", "body"])).slice(0, 240),
+    date: pick(m, ["date", "internalDate", "received_at", "timestamp", "Date"]),
+    id: String(pick(m, ["id", "message_id", "thread_id", "threadId"])) || "",
+  };
+}
+function whenLabel(d) {
+  const t = typeof d === "number" ? new Date(d < 1e12 ? d * 1000 : d) : new Date(d);
+  if (isNaN(t)) return "";
+  const mins = (Date.now() - t.getTime()) / 60000;
+  if (mins < 60) return Math.max(1, Math.round(mins)) + "m ago";
+  if (mins < 60 * 24) return Math.round(mins / 60) + "h ago";
+  return t.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function isDeal(m) { return DEAL_WORDS.test(m.subject + " " + m.snippet + " " + m.fromRaw); }
+function importance(m) {
+  let s = 0;
+  if (isDeal(m)) s += 100;
+  if (!BULK_FROM.test(m.fromRaw)) s += 20;
+  if (/\?|urgent|invoice|payment|contract|deadline/i.test(m.subject)) s += 10;
+  return s;
+}
+
+async function searchGmail(toolName, q) {
+  const shapes = [{ q }, { query: q }];
+  let lastErr = null;
+  for (const input of shapes) {
+    try {
+      return await window.claude.mcp.callTool(GMAIL, toolName, input,
+        { cache: { staleTime: 120000, gcTime: 900000 } });
+    } catch (e) {
+      lastErr = e;
+      if (e && (e.code === "tool_error" || e.code === "bad_request" || e.code === "transform_error")) continue;
+      throw e;
+    }
+  }
+  throw lastErr;
+}
+
+function renderInbox(messages, storedAt) {
+  if (!messages.length) {
+    inboxNote("Inbox zero overnight — no new mail in the last 24 hours. 🎉");
+    return;
+  }
+  const ranked = messages.map(normMsg)
+    .sort((a, b) => importance(b) - importance(a)).slice(0, 8);
+  $("inbox-body").innerHTML = ranked.map((m) => `
+    <div class="email">
+      <div class="from"><span>${esc(m.from)}</span>
+        ${isDeal(m) ? '<span class="chip chip-deal">deal</span>' : ""}
+        <span class="when">${esc(whenLabel(m.date))}</span></div>
+      <div class="subj">${esc(m.subject)}</div>
+      <div class="snip">${esc(m.snippet)}</div>
+    </div>`).join("") +
+    (messages.length > 8 ? `<p class="stale-note">+ ${messages.length - 8} more in the last 24h</p>` : "") +
+    (storedAt ? `<p class="stale-note">Inbox as of ${new Date(storedAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</p>` : "");
+}
+
+function renderDeals(messages) {
+  const closed = loadClosed();
+  const thisMonth = (iso) => iso && iso.slice(0, 7) === new Date().toISOString().slice(0, 7);
+  const offers = [];
+  const seen = new Set();
+  for (const raw of messages.map(normMsg)) {
+    if (!isDeal(raw)) continue;
+    const key = raw.id || (raw.fromRaw + "|" + raw.subject);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    offers.push({ ...raw, key });
+  }
+  const closedKeys = new Set(closed.map((c) => c.key));
+  $("deal-tiles").innerHTML =
+    tile(num(offers.length), "offers (30d)") +
+    tile(num(closed.filter((c) => thisMonth(c.closedAt)).length), "closed this month") +
+    tile(num(closed.length), "closed all-time");
+  if (!offers.length) {
+    dealNote("No brand-deal emails detected in the last 30 days. Offers with words like <em>collab, sponsorship, partnership</em> show up here automatically.");
+    return;
+  }
+  $("deal-list").innerHTML = offers.slice(0, 10).map((o) => `
+    <div class="deal-row">
+      <div class="deal-info">
+        <div class="t">${esc(o.from)}</div>
+        <div class="s">${esc(o.subject)}</div>
+      </div>
+      <button class="deal-btn ${closedKeys.has(o.key) ? "closed" : ""}" data-key="${esc(o.key)}"
+        data-label="${esc(o.from + " — " + o.subject)}">
+        ${closedKeys.has(o.key) ? "✓ Closed" : "Mark closed"}</button>
+    </div>`).join("");
+  $("deal-list").querySelectorAll(".deal-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      let cur = loadClosed();
+      if (cur.some((c) => c.key === btn.dataset.key)) {
+        cur = cur.filter((c) => c.key !== btn.dataset.key);
+      } else {
+        cur.push({ key: btn.dataset.key, label: btn.dataset.label, closedAt: new Date().toISOString() });
+      }
+      saveClosed(cur);
+      renderDeals(messages);
+    });
+  });
+  $("deal-note").textContent =
+    '"Closed" deals are remembered in this browser. Counts update as you mark offers closed.';
+}
+
+async function initEmail() {
+  renderDeals([]); // paint deal tiles immediately from local history
+  if (!window.claude || !window.claude.mcp) {
+    inboxNote(ERROR_COPY.not_granted);
+    dealNote("Deal detection runs when this page is open inside claude.ai.");
+    return;
+  }
+  let servers;
+  try { servers = (await window.claude.mcp.listTools()).servers; }
+  catch (e) { inboxNote(copyFor(e)); dealNote(copyFor(e)); return; }
+  const gmail = servers.find((s) => s.server === GMAIL);
+  if (!gmail || !gmail.tools.length) {
+    inboxNote(ERROR_COPY.server_not_connected);
+    dealNote("Connect Gmail and offers will be detected automatically.");
+    return;
+  }
+  if (gmail.authStatus === "needs_reauth") { inboxNote(ERROR_COPY.needs_reauth); return; }
+  const names = gmail.tools.map((t) => t.name);
+  const searchTool =
+    names.find((n) => /search.*(mail|message)/i.test(n)) ||
+    names.find((n) => /search.*thread/i.test(n)) ||
+    names.find((n) => /search/i.test(n)) ||
+    names.find((n) => /list.*(mail|message)/i.test(n));
+  if (!searchTool) {
+    inboxNote("Your Gmail connector exposes no search tool this page can use (" + esc(names.join(", ")) + ").");
+    return;
+  }
+
+  const attempt = async (fn, after) => {
+    try { after(await fn()); }
+    catch (e) {
+      if (e && e.retryable) {
+        await new Promise((r) => setTimeout(r, (e.retryAfterMs || 2000) + Math.random() * 1000));
+        try { after(await fn()); return; } catch (e2) { e = e2; }
+      }
+      after(null, e);
+    }
+  };
+
+  attempt(
+    () => searchGmail(searchTool, "in:inbox newer_than:1d"),
+    (res, err) => {
+      if (err) { inboxNote(copyFor(err)); return; }
+      renderInbox(extractMessages(res.payload), res.cache && res.cache.storedAt);
+    });
+
+  attempt(
+    () => searchGmail(searchTool,
+      'in:inbox newer_than:30d (collab OR collaboration OR sponsorship OR sponsor OR partnership OR "brand deal" OR ambassador OR "paid promotion" OR UGC OR affiliate)'),
+    (res, err) => {
+      if (err) { dealNote(copyFor(err)); return; }
+      renderDeals(extractMessages(res.payload));
+    });
+}
+initEmail();
+</script>
