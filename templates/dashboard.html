@@ -490,33 +490,48 @@ function copyFor(e) {
     "Couldn't reach Gmail just now (" + esc(e && e.code || "unknown") + "). Reload to try again.";
 }
 
-/* Pull a usable message array out of whatever shape the connector returns. */
+/* Decode HTML entities that Gmail bakes into snippets/subjects (&#39; &amp; …). */
+function decodeEntities(s) {
+  if (!s) return "";
+  const el = decodeEntities._el || (decodeEntities._el = document.createElement("textarea"));
+  el.innerHTML = String(s);
+  return el.value;
+}
+
+/* Gmail search_threads returns { threads: [{ id, messages: [...] }] }.
+   Collapse each thread to its newest inbound message. */
+function repMessage(thread) {
+  const msgs = Array.isArray(thread.messages) ? thread.messages : [];
+  if (!msgs.length) return null;
+  const inbox = msgs.filter((m) => Array.isArray(m.labelIds) && m.labelIds.includes("INBOX"));
+  const pool = inbox.length ? inbox : msgs;
+  const m = pool.reduce((a, b) => (new Date(b.date || 0) >= new Date(a.date || 0) ? b : a));
+  return { ...m, threadId: thread.id };
+}
+
 function extractMessages(payload) {
   if (payload == null) return [];
   if (typeof payload === "string") { try { payload = JSON.parse(payload); } catch { return []; } }
-  if (Array.isArray(payload)) return payload.filter((m) => typeof m === "object");
-  for (const k of ["messages", "threads", "emails", "results", "items", "data"]) {
-    if (Array.isArray(payload[k])) return payload[k].filter((m) => typeof m === "object");
+  if (payload && Array.isArray(payload.threads)) {
+    return payload.threads.map(repMessage).filter(Boolean);
   }
-  for (const k of Object.keys(payload)) {
-    if (Array.isArray(payload[k]) && payload[k].length && typeof payload[k][0] === "object"
-        && ("subject" in payload[k][0] || "snippet" in payload[k][0] || "from" in payload[k][0])) {
-      return payload[k];
-    }
+  if (Array.isArray(payload)) return payload.filter((m) => typeof m === "object");
+  for (const k of ["messages", "emails", "results", "items", "data"]) {
+    if (Array.isArray(payload[k])) return payload[k].filter((m) => typeof m === "object");
   }
   return [];
 }
 const pick = (m, keys) => { for (const k of keys) { if (m[k] != null && m[k] !== "") return m[k]; } return ""; };
 function normMsg(m) {
-  const fromRaw = String(pick(m, ["from", "sender", "From", "from_email", "author"]));
+  const fromRaw = String(pick(m, ["sender", "from", "From", "from_email", "author"]));
   const nameMatch = fromRaw.match(/^"?([^"<]+)"?\s*</);
   return {
     from: (nameMatch ? nameMatch[1].trim() : fromRaw.replace(/<.*>/, "").trim()) || fromRaw || "Unknown sender",
     fromRaw,
-    subject: String(pick(m, ["subject", "Subject", "title"])) || "(no subject)",
-    snippet: String(pick(m, ["snippet", "preview", "body_snippet", "summary", "body"])).slice(0, 240),
+    subject: decodeEntities(String(pick(m, ["subject", "Subject", "title"]))) || "(no subject)",
+    snippet: decodeEntities(String(pick(m, ["snippet", "preview", "body_snippet", "summary", "body"]))).slice(0, 240),
     date: pick(m, ["date", "internalDate", "received_at", "timestamp", "Date"]),
-    id: String(pick(m, ["id", "message_id", "thread_id", "threadId"])) || "",
+    id: String(pick(m, ["threadId", "id", "message_id", "thread_id"])) || "",
   };
 }
 function whenLabel(d) {
@@ -536,20 +551,10 @@ function importance(m) {
   return s;
 }
 
-async function searchGmail(toolName, q) {
-  const shapes = [{ q }, { query: q }];
-  let lastErr = null;
-  for (const input of shapes) {
-    try {
-      return await window.claude.mcp.callTool(GMAIL, toolName, input,
-        { cache: { staleTime: 120000, gcTime: 900000 } });
-    } catch (e) {
-      lastErr = e;
-      if (e && (e.code === "tool_error" || e.code === "bad_request" || e.code === "transform_error")) continue;
-      throw e;
-    }
-  }
-  throw lastErr;
+async function searchGmail(toolName, q, pageSize) {
+  return window.claude.mcp.callTool(GMAIL, toolName,
+    { query: q, pageSize: pageSize || 25, view: "THREAD_VIEW_MINIMAL" },
+    { cache: { staleTime: 120000, gcTime: 900000 } });
 }
 
 function renderInbox(messages, storedAt) {
@@ -637,10 +642,10 @@ async function initEmail() {
   if (gmail.authStatus === "needs_reauth") { inboxNote(ERROR_COPY.needs_reauth); return; }
   const names = gmail.tools.map((t) => t.name);
   const searchTool =
-    names.find((n) => /search.*(mail|message)/i.test(n)) ||
+    names.find((n) => n === "search_threads") ||
     names.find((n) => /search.*thread/i.test(n)) ||
-    names.find((n) => /search/i.test(n)) ||
-    names.find((n) => /list.*(mail|message)/i.test(n));
+    names.find((n) => /search.*(mail|message)/i.test(n)) ||
+    names.find((n) => /search/i.test(n));
   if (!searchTool) {
     inboxNote("Your Gmail connector exposes no search tool this page can use (" + esc(names.join(", ")) + ").");
     return;
@@ -658,7 +663,7 @@ async function initEmail() {
   };
 
   attempt(
-    () => searchGmail(searchTool, "in:inbox newer_than:1d"),
+    () => searchGmail(searchTool, "in:inbox newer_than:1d", 25),
     (res, err) => {
       if (err) { inboxNote(copyFor(err)); return; }
       renderInbox(extractMessages(res.payload), res.cache && res.cache.storedAt);
@@ -666,7 +671,7 @@ async function initEmail() {
 
   attempt(
     () => searchGmail(searchTool,
-      'in:inbox newer_than:30d (collab OR collaboration OR sponsorship OR sponsor OR partnership OR "brand deal" OR ambassador OR "paid promotion" OR UGC OR affiliate)'),
+      'in:inbox newer_than:30d (collab OR collaboration OR sponsorship OR sponsor OR partnership OR "brand deal" OR brand OR ambassador OR "paid promotion" OR UGC OR affiliate OR opportunity)', 50),
     (res, err) => {
       if (err) { dealNote(copyFor(err)); return; }
       renderDeals(extractMessages(res.payload));
