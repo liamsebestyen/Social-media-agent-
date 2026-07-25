@@ -32,11 +32,15 @@ HEADERS = {
 }
 
 
-def fetch_profile(retries: int = 3) -> dict | None:
+def fetch_profile(retries: int = 5) -> dict | None:
     """Fetch the live profile. Pass a saved profile JSON path as argv[1] to skip
-    the network. Returns None when Instagram can't be reached (rate limit etc.)."""
+    the network. Returns None when Instagram can't be reached (rate limit etc.).
+
+    Instagram rate-limits by IP, so a burst of quick retries rarely helps —
+    back off generously (5, 15, 30, 60, 90s) to ride out a short 429 window."""
     if len(sys.argv) > 1:
         return json.loads(Path(sys.argv[1]).read_text())["data"]["user"]
+    backoffs = [5, 15, 30, 60, 90]
     last_err = None
     for attempt in range(retries):
         try:
@@ -45,7 +49,8 @@ def fetch_profile(retries: int = 3) -> dict | None:
                 return json.load(resp)["data"]["user"]
         except Exception as err:  # noqa: BLE001 - retry any transport error
             last_err = err
-            time.sleep(5 * (attempt + 1))
+            if attempt < retries - 1:
+                time.sleep(backoffs[min(attempt, len(backoffs) - 1)])
     print(f"warning: could not fetch Instagram profile ({last_err}); "
           "falling back to the latest saved snapshot", file=sys.stderr)
     return None
@@ -109,8 +114,10 @@ def interp(x: float, points: list[tuple[float, float]]) -> float:
     return points[-1][1]
 
 
-CADENCE_WEEK = [(0, 0), (1, 40), (2, 55), (3, 70), (4, 85), (5, 100)]
-CADENCE_MONTH = [(0, 0), (4, 40), (8, 60), (12, 75), (16, 90), (20, 100)]
+# Posting cadence → score. Calibrated for a creator posting quality content,
+# where a steady ~1.5-2 posts/week (6-8 a month) is a healthy rhythm, not a D.
+CADENCE_WEEK = [(0, 0), (1, 55), (2, 72), (3, 85), (4, 95), (5, 100)]
+CADENCE_MONTH = [(0, 0), (2, 40), (4, 58), (6, 70), (8, 82), (12, 95), (16, 100)]
 # Engagement rate per post ((likes+comments)/followers) → score.
 ENGAGEMENT = [(0, 10), (0.001, 30), (0.004, 55), (0.008, 70), (0.015, 85), (0.03, 100)]
 # Follower growth over the window, as a fraction → score.
@@ -149,9 +156,8 @@ def growth_over(history: list[dict], days: int) -> tuple[float | None, int | Non
 
 
 def grade_window(posts, followers, days, cadence_curve, growth_curve, history,
-                 cadence_weight, engagement_weight, growth_weight):
-    now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=days)
+                 cadence_weight, engagement_weight, growth_weight, as_of):
+    cutoff = as_of - timedelta(days=days)
     window = [p for p in posts if datetime.fromtimestamp(p["ts"], tz=timezone.utc) >= cutoff]
 
     likes = sum(p["likes"] for p in window)
@@ -204,16 +210,24 @@ def display_caption(caption: str, limit: int = 90) -> str:
 
 
 def main() -> None:
+    now = datetime.now(timezone.utc)
     user = fetch_profile()
     history = load_history()
-    if user is not None:
+    fresh = user is not None
+    if fresh:
         posts = parse_posts(user)
         history = save_snapshot(history, user, posts)
         followers = user["edge_followed_by"]["count"]
+        as_of = now
     elif history:
+        # Instagram was unreachable. Grade the last known-good snapshot relative
+        # to WHEN it was captured, so the report reflects that day rather than
+        # silently decaying to an F as days pass with no fresh data.
         latest = history[-1]
         posts = latest["posts"]
         followers = latest["followers"]
+        as_of = datetime.strptime(latest["date"], "%Y-%m-%d").replace(
+            hour=23, minute=59, second=59, tzinfo=timezone.utc)
         user = {
             "username": USERNAME,
             "edge_followed_by": {"count": followers},
@@ -225,13 +239,16 @@ def main() -> None:
         raise SystemExit("no live data and no saved history — nothing to render")
 
     week = grade_window(posts, followers, 7, CADENCE_WEEK, GROWTH_WEEK, history,
-                        cadence_weight=0.35, engagement_weight=0.45, growth_weight=0.20)
+                        cadence_weight=0.35, engagement_weight=0.45, growth_weight=0.20,
+                        as_of=as_of)
     month = grade_window(posts, followers, 30, CADENCE_MONTH, GROWTH_MONTH, history,
-                         cadence_weight=0.30, engagement_weight=0.40, growth_weight=0.30)
+                         cadence_weight=0.30, engagement_weight=0.40, growth_weight=0.30,
+                         as_of=as_of)
 
-    now = datetime.now(timezone.utc)
     data = {
         "generated_at": now.isoformat(),
+        "data_as_of": as_of.strftime("%Y-%m-%d"),
+        "stale": not fresh,
         "profile": {
             "username": user["username"],
             "full_name": user.get("full_name", ""),
@@ -255,8 +272,8 @@ def main() -> None:
                 "comments": p["comments"],
                 "views": p["views"],
                 "url": f"https://www.instagram.com/p/{p['shortcode']}/" if p["shortcode"] else "",
-                "in_week": (now - datetime.fromtimestamp(p["ts"], tz=timezone.utc)).days < 7,
-                "in_month": (now - datetime.fromtimestamp(p["ts"], tz=timezone.utc)).days < 30,
+                "in_week": (as_of - datetime.fromtimestamp(p["ts"], tz=timezone.utc)).days < 7,
+                "in_month": (as_of - datetime.fromtimestamp(p["ts"], tz=timezone.utc)).days < 30,
             }
             for p in posts[:12]
         ],
@@ -266,7 +283,8 @@ def main() -> None:
     payload = json.dumps(data).replace("</", "<\\/")  # never break out of the <script> tag
     OUTPUT_PATH.write_text(template.replace("__DASH_DATA__", payload))
     print(f"dashboard.html written — week {week['grade']} ({week['score']}), "
-          f"month {month['grade']} ({month['score']}), {followers:,} followers")
+          f"month {month['grade']} ({month['score']}), {followers:,} followers"
+          f"{'' if fresh else '  [STALE: Instagram unreachable, using ' + as_of.strftime('%Y-%m-%d') + ']'}")
 
 
 if __name__ == "__main__":

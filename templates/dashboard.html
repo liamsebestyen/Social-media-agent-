@@ -258,6 +258,13 @@
     font-size: 11.5px; color: var(--ink-3); border-top: 1px solid var(--line);
     padding-top: 14px; margin-top: 8px;
   }
+  #stale-banner {
+    display: flex; gap: 10px; align-items: baseline;
+    background: var(--warn-soft); color: var(--warn);
+    border: 1px solid var(--warn); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 20px; font-size: 13px;
+  }
+  #stale-banner b { font-weight: 700; }
 </style>
 
 <div class="wrap">
@@ -273,6 +280,8 @@
     </div>
     <div class="report-date" id="report-date"></div>
   </header>
+
+  <div id="stale-banner" hidden></div>
 
   <div class="grades" id="grades"></div>
 
@@ -348,9 +357,22 @@ function bindTip(el, text) {
 $("hs-followers").textContent = num(DASH.profile.followers);
 $("hs-posts").textContent = num(DASH.profile.total_posts);
 const gen = new Date(DASH.generated_at);
-$("report-date").textContent =
-  gen.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
-  " · stats refreshed " + gen.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+const asOf = DASH.data_as_of
+  ? new Date(DASH.data_as_of + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric" })
+  : null;
+$("report-date").textContent = DASH.stale
+  ? gen.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
+    " · Instagram data from " + asOf
+  : gen.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
+    " · stats refreshed " + gen.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+if (DASH.stale) {
+  const b = $("stale-banner");
+  b.hidden = false;
+  b.innerHTML = `<span aria-hidden="true">⚠</span><span><b>Instagram couldn't be reached today.</b> ` +
+    `These grades reflect your account as of <b>${esc(asOf)}</b> — they'll update automatically ` +
+    `on the next successful refresh. Your inbox and deals below are still live.</span>`;
+}
 
 function gradeCard(title, w, blurb) {
   const comps = w.components.map((c) => `
