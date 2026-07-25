@@ -1,0 +1,7 @@
+# Python
+__pycache__/
+*.pyc
+
+# Local scratch / fetched payloads
+*.tmp
+ig_*.json
