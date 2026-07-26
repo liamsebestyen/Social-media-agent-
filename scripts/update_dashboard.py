@@ -209,6 +209,85 @@ def display_caption(caption: str, limit: int = 90) -> str:
     return text[: limit - 1] + "…" if len(text) > limit else text
 
 
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday",
+            "Friday", "Saturday", "Sunday"]
+
+
+def top_post(posts, as_of, days):
+    """The standout post in the window, with a plain-language 'why'."""
+    cutoff = as_of - timedelta(days=days)
+    window = [p for p in posts
+              if datetime.fromtimestamp(p["ts"], tz=timezone.utc) >= cutoff]
+    if not window:
+        return None
+    eng = lambda p: p["likes"] + p["comments"]  # noqa: E731
+    best = max(window, key=eng)
+    avg = sum(eng(p) for p in window) / len(window)
+    mult = eng(best) / avg if avg else 1
+    if mult >= 1.2:
+        why = f"{mult:.1f}× your average this period"
+    elif mult <= 0.85:
+        why = "a quieter one — below your usual"
+    else:
+        why = "right around your average"
+    return {
+        "date": best["date"],
+        "caption": display_caption(best["caption"], 80),
+        "likes": best["likes"],
+        "comments": best["comments"],
+        "eng": eng(best),
+        "url": f"https://www.instagram.com/p/{best['shortcode']}/" if best["shortcode"] else "",
+        "format": "Reel" if best.get("is_video") else "Post",
+        "why": why,
+        "window_days": days,
+    }
+
+
+def best_day(posts, as_of, days=90):
+    """Average engagement per weekday across RECENT posts only (directional —
+    the public API exposes ~12 posts, and old viral outliers would skew it, so
+    we window to the last `days`)."""
+    cutoff = as_of - timedelta(days=days)
+    recent = [p for p in posts
+              if datetime.fromtimestamp(p["ts"], tz=timezone.utc) >= cutoff]
+    buckets: dict[int, list[int]] = {}
+    for p in recent:
+        wd = datetime.fromtimestamp(p["ts"], tz=timezone.utc).weekday()
+        buckets.setdefault(wd, []).append(p["likes"] + p["comments"])
+    if len(recent) < 4 or len(buckets) < 2:
+        return None
+    per = [{"day": WEEKDAYS[wd], "avg": round(sum(v) / len(v)), "n": len(v)}
+           for wd, v in buckets.items()]
+    best = max(per, key=lambda d: d["avg"])
+    return {"best": best, "sample": len(recent)}
+
+
+def milestone(followers, history):
+    """Next round-number milestone and, if we have history, a pace-based ETA."""
+    step = 500 if followers < 10000 else 1000 if followers < 100000 else 10000
+    nxt = (followers // step + 1) * step
+    per_day = eta_days = eta_date = None
+    if len(history) >= 2:
+        first, last = history[0], history[-1]
+        span = (datetime.strptime(last["date"], "%Y-%m-%d")
+                - datetime.strptime(first["date"], "%Y-%m-%d")).days
+        if span > 0:
+            per_day = (last["followers"] - first["followers"]) / span
+            if per_day > 0.1:
+                eta_days = round((nxt - followers) / per_day)
+                eta_date = (datetime.strptime(last["date"], "%Y-%m-%d")
+                            + timedelta(days=eta_days)).strftime("%Y-%m-%d")
+    return {
+        "current": followers,
+        "next": nxt,
+        "step": step,
+        "remaining": nxt - followers,
+        "per_day": None if per_day is None else round(per_day, 1),
+        "eta_days": eta_days,
+        "eta_date": eta_date,
+    }
+
+
 def main() -> None:
     now = datetime.now(timezone.utc)
     user = fetch_profile()
@@ -264,6 +343,11 @@ def main() -> None:
         ],
         "week": week,
         "month": month,
+        "insight": {
+            "top_post": top_post(posts, as_of, 7) or top_post(posts, as_of, 30),
+            "best_day": best_day(posts, as_of),
+        },
+        "milestone": milestone(followers, history),
         "recent_posts": [
             {
                 "date": p["date"],
