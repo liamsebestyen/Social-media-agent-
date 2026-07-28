@@ -282,18 +282,40 @@
  {
   "date": "2026-07-28",
   "followers": 12883,
-  "following": 1123,
-  "total_posts": 426,
+  "following": 1122,
+  "total_posts": 428,
   "posts": [
+   {
+    "id": "3951353320341713768",
+    "shortcode": "DbWBujhBzNo",
+    "ts": 1785258000,
+    "date": "2026-07-28",
+    "is_video": true,
+    "likes": 36,
+    "comments": 9,
+    "views": 1407,
+    "caption": "What does this code print?\ud83d\udda8\ufe0f\n\nThis is a tougher one, props to you if you can get it \u2705\n\n\ud83e\udd13Follow me for more coding challenges \n\n\ud83d\ude4bIf you know the answer help out others!"
+   },
+   {
+    "id": "3950900531696138618",
+    "shortcode": "DbUaxnOpnl6",
+    "ts": 1785204156,
+    "date": "2026-07-28",
+    "is_video": true,
+    "likes": 80,
+    "comments": 5,
+    "views": 719,
+    "caption": "This is all you need \ud83d\udcb8\n\n#money #entrepeneur #money #macbook #claude"
+   },
    {
     "id": "3950204165086950225",
     "shortcode": "DbR8cJSRrNR",
     "ts": 1785121196,
     "date": "2026-07-27",
     "is_video": true,
-    "likes": 152,
-    "comments": 17,
-    "views": 0,
+    "likes": 188,
+    "comments": 18,
+    "views": 707,
     "caption": "What is the error?\ud83e\udd13\n\nThis should be a super simple one\ud83d\ude42\u200d\u2194\ufe0f\n\nCheck the poll if you know \ud83d\udcdd\n\n\ud83e\uddd1\u200d\ud83d\udcbbFollow me for more coding challenges"
    },
    {
@@ -302,9 +324,9 @@
     "ts": 1785004800,
     "date": "2026-07-25",
     "is_video": true,
-    "likes": 16,
+    "likes": 17,
     "comments": 2,
-    "views": 0,
+    "views": 14,
     "caption": "Time lapsing myself working is my new productivity hack \ud83e\uddd1\u200d\ud83d\udcbb\n\nWas so locked in a burnt through my session limit in half an hour \ud83d\udd12\n\n\ud83e\uddd1\u200d\ud83d\udcbbFollow me to see more of these Claude coding montages"
    },
    {
@@ -315,7 +337,7 @@
     "is_video": true,
     "likes": 46,
     "comments": 2,
-    "views": 0,
+    "views": 14,
     "caption": "Finally got a challenge for all the JS devs! \u2615\ufe0f\n\nDo you know what it prints (hint there\u2019s bugs\ud83d\udc1e)\n\n\ud83e\uddd1\u200d\ud83d\udcbbFollow me for more coding challenges"
    },
    {
@@ -326,7 +348,7 @@
     "is_video": true,
     "likes": 9,
     "comments": 3,
-    "views": 0,
+    "views": 3,
     "caption": "Fable 5 is available for now with usage credits, but I am unsure how long we will access to it at all. Build this dashboard (even with your usage credits) while we still have access"
    },
    {
@@ -337,7 +359,7 @@
     "is_video": true,
     "likes": 118,
     "comments": 16,
-    "views": 0,
+    "views": 18,
     "caption": "What does this code print\u2049\ufe0f\n\nThis one should not be too bad, if you know how Python code works \ud83e\uddd1\u200d\ud83d\udcbb\n\nFollow me to learn to code \ud83d\udcb8"
    },
    {
@@ -346,9 +368,9 @@
     "ts": 1784667900,
     "date": "2026-07-21",
     "is_video": true,
-    "likes": 96,
+    "likes": 99,
     "comments": 7,
-    "views": 0,
+    "views": 35,
     "caption": "Summer protocol \u2600\ufe0f"
    },
    {
@@ -359,30 +381,8 @@
     "is_video": true,
     "likes": 29,
     "comments": 1,
-    "views": 0,
+    "views": 10,
     "caption": "What is the error? \ud83e\uddd1\u200d\ud83d\udcbb\n\nThis one should be real simple\ud83d\ude42\u200d\u2194\ufe0f\n\n\ud83d\udcb8Follow me for more coding challenges"
-   },
-   {
-    "id": "3945113397601078731",
-    "shortcode": "Da_27umpY3L",
-    "ts": 1784514355,
-    "date": "2026-07-20",
-    "is_video": true,
-    "likes": 10,
-    "comments": 2,
-    "views": 0,
-    "caption": "Auto dm not on for this one. If you want to know how I made this dm me or comment and I will show you how I made this life dashboard. As a perfectionist I love a tool that shows me in one place how I\u2019m doing \n\nFollow me to see more cool things I build while semi-vibe coding\n\nWhat do you think of this dashboard?"
-   },
-   {
-    "id": "3944474887680527683",
-    "shortcode": "Da9lwL5pY1D",
-    "ts": 1784438308,
-    "date": "2026-07-19",
-    "is_video": true,
-    "likes": 268,
-    "comments": 58,
-    "views": 0,
-    "caption": "What is the error?\ud83e\udd14\n\nDo you know? Tell me \ud83e\udd19\n\n\ud83d\udc68\u200d\ud83d\udcbbFollow @liam.codez for more coding challenges"
    },
    {
     "id": "3629051983740288716",
@@ -390,9 +390,9 @@
     "ts": 1746836700,
     "date": "2025-05-10",
     "is_video": true,
-    "likes": 30101,
+    "likes": 30100,
     "comments": 9,
-    "views": 5143,
+    "views": 5148,
     "caption": "Quick Euro Trip study break \n#europe #france #paris #travel"
    },
    {
@@ -401,9 +401,9 @@
     "ts": 1746730800,
     "date": "2025-05-08",
     "is_video": true,
-    "likes": 195875,
+    "likes": 195872,
     "comments": 541,
-    "views": 246137,
+    "views": 246141,
     "caption": "I literally almost transferred.\n#business #engineering #stem #computerscience"
    },
    {
@@ -412,9 +412,9 @@
     "ts": 1740872127,
     "date": "2025-03-01",
     "is_video": true,
-    "likes": 67235,
+    "likes": 67234,
     "comments": 155,
-    "views": 427881,
+    "views": 427883,
     "caption": "It really does get more difficult\u2026 \n\n#cs #engineering #college #engineeringlife #softwareengineering #software \n\nDo you find college gets more difficult?"
    }
   ]

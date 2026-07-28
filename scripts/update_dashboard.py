@@ -33,14 +33,24 @@ HEADERS = {
 }
 
 
+def _args() -> tuple[str | None, bool]:
+    """(profile_json_path, record) — `--record` marks a supplied file as a fetch
+    that just happened, so it may be written to history as a real observation."""
+    argv = [a for a in sys.argv[1:]]
+    record = "--record" in argv
+    paths = [a for a in argv if not a.startswith("--")]
+    return (paths[0] if paths else None), record
+
+
 def fetch_profile(retries: int = 5) -> dict | None:
     """Fetch the live profile. Pass a saved profile JSON path as argv[1] to skip
     the network. Returns None when Instagram can't be reached (rate limit etc.).
 
     Instagram rate-limits by IP, so a burst of quick retries rarely helps —
     back off generously (5, 15, 30, 60, 90s) to ride out a short 429 window."""
-    if len(sys.argv) > 1:
-        return json.loads(Path(sys.argv[1]).read_text())["data"]["user"]
+    path, _ = _args()
+    if path:
+        return json.loads(Path(path).read_text())["data"]["user"]
     backoffs = [5, 15, 30, 60, 90]
     last_err = None
     for attempt in range(retries):
@@ -337,10 +347,12 @@ def main() -> None:
     history = load_history()
     fresh = user is not None
     uncounted = 0
-    # A profile JSON passed on the command line is a replay of an earlier fetch,
-    # so it must never be recorded as today's observation — that would invent
-    # data points and distort the growth curve.
-    replay = len(sys.argv) > 1
+    # A profile JSON passed on the command line is normally a replay of an
+    # earlier fetch, so it must not be recorded as today's observation — that
+    # would invent data points and distort the growth curve. `--record` is the
+    # explicit opt-in for a file that was genuinely just fetched.
+    supplied, record = _args()
+    replay = bool(supplied) and not record
     if fresh:
         posts = parse_posts(user)
         if not replay:

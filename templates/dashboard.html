@@ -431,11 +431,25 @@ const gen = new Date(DASH.generated_at);
 const asOf = DASH.data_as_of
   ? new Date(DASH.data_as_of + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric" })
   : null;
-$("report-date").textContent = DASH.stale
-  ? gen.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
-    " · Instagram data from " + asOf
-  : gen.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) +
-    " · stats refreshed " + gen.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+function ageLabel(then) {
+  const mins = Math.max(0, (Date.now() - then.getTime()) / 60000);
+  if (mins < 90) return `${Math.round(mins)} min ago`;
+  const hrs = mins / 60;
+  if (hrs < 36) return `${Math.round(hrs)} hour${Math.round(hrs) === 1 ? "" : "s"} ago`;
+  return `${Math.round(hrs / 24)} days ago`;
+}
+function paintAge() {
+  const dateStr = gen.toLocaleDateString("en-US",
+    { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const age = ageLabel(gen);
+  const hrs = (Date.now() - gen.getTime()) / 3600000;
+  const flag = hrs >= 26 ? " ⚠" : "";
+  $("report-date").innerHTML = DASH.stale
+    ? `${esc(dateStr)} · Instagram data from <b>${esc(asOf)}</b>`
+    : `${esc(dateStr)} · Instagram stats updated <b>${esc(age)}</b>${flag}`;
+}
+paintAge();
+setInterval(paintAge, 60000);  // keep the age honest while the tab stays open
 
 if (DASH.stale) {
   const n = DASH.uncounted_posts || 0;
