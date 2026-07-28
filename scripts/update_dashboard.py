@@ -8,6 +8,7 @@ to produce dashboard.html at the repo root.
 """
 
 import json
+import re
 import sys
 import time
 import urllib.request
@@ -54,6 +55,48 @@ def fetch_profile(retries: int = 5) -> dict | None:
     print(f"warning: could not fetch Instagram profile ({last_err}); "
           "falling back to the latest saved snapshot", file=sys.stderr)
     return None
+
+
+PROFILE_PAGE = f"https://www.instagram.com/{USERNAME}/"
+OG_RE = re.compile(
+    r'property="og:description" content="([\d.,KM]+) Followers, '
+    r'([\d.,KM]+) Following, ([\d.,KM]+) Posts'
+)
+
+
+def _og_int(s: str) -> int | None:
+    """'426' -> 426, '1,187' -> 1187, '13K' -> 13000 (approximate)."""
+    s = s.strip().replace(",", "")
+    try:
+        if s.endswith("K"):
+            return int(float(s[:-1]) * 1_000)
+        if s.endswith("M"):
+            return int(float(s[:-1]) * 1_000_000)
+        return int(s)
+    except ValueError:
+        return None
+
+
+def fetch_profile_page() -> dict | None:
+    """Fallback when the JSON API is blocked: the logged-out profile page still
+    exposes an og:description with exact Posts/Following counts (the follower
+    figure is rounded, e.g. '13K', so it is only ever used as a display hint —
+    never written to history, which would corrupt growth tracking)."""
+    try:
+        req = urllib.request.Request(PROFILE_PAGE, headers={"User-Agent": HEADERS["User-Agent"]})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            html = resp.read().decode("utf-8", "replace")
+    except Exception as err:  # noqa: BLE001
+        print(f"warning: profile-page fallback failed ({err})", file=sys.stderr)
+        return None
+    m = OG_RE.search(html)
+    if not m:
+        return None
+    followers, following, posts = (_og_int(g) for g in m.groups())
+    if posts is None:
+        return None
+    return {"total_posts": posts, "following": following,
+            "followers_approx": followers}
 
 
 def parse_posts(user: dict) -> list[dict]:
@@ -293,25 +336,39 @@ def main() -> None:
     user = fetch_profile()
     history = load_history()
     fresh = user is not None
+    uncounted = 0
     if fresh:
         posts = parse_posts(user)
         history = save_snapshot(history, user, posts)
         followers = user["edge_followed_by"]["count"]
         as_of = now
     elif history:
-        # Instagram was unreachable. Grade the last known-good snapshot relative
-        # to WHEN it was captured, so the report reflects that day rather than
-        # silently decaying to an F as days pass with no fresh data.
+        # Instagram's JSON API was unreachable. Grade the last known-good
+        # snapshot relative to WHEN it was captured, so the report reflects that
+        # day rather than silently decaying to an F as days pass without data.
         latest = history[-1]
         posts = latest["posts"]
         followers = latest["followers"]
         as_of = datetime.strptime(latest["date"], "%Y-%m-%d").replace(
             hour=23, minute=59, second=59, tzinfo=timezone.utc)
+        # The public profile page usually still answers — use it to correct the
+        # headline post/following counts even when per-post stats are stale.
+        page = fetch_profile_page()
+        total_posts = latest["total_posts"]
+        following = latest["following"]
+        if page:
+            total_posts = page["total_posts"]
+            if page["following"] is not None:
+                following = page["following"]
+            uncounted = max(0, total_posts - latest["total_posts"])
+            print(f"note: profile page reachable — post count {total_posts}"
+                  f"{f' ({uncounted} newer than the last full snapshot)' if uncounted else ''}",
+                  file=sys.stderr)
         user = {
             "username": USERNAME,
             "edge_followed_by": {"count": followers},
-            "edge_follow": {"count": latest["following"]},
-            "edge_owner_to_timeline_media": {"count": latest["total_posts"]},
+            "edge_follow": {"count": following},
+            "edge_owner_to_timeline_media": {"count": total_posts},
             "is_verified": True,
         }
     else:
@@ -328,6 +385,7 @@ def main() -> None:
         "generated_at": now.isoformat(),
         "data_as_of": as_of.strftime("%Y-%m-%d"),
         "stale": not fresh,
+        "uncounted_posts": uncounted,
         "profile": {
             "username": user["username"],
             "full_name": user.get("full_name", ""),

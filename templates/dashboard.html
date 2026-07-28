@@ -436,10 +436,15 @@ $("report-date").textContent = DASH.stale
     " · stats refreshed " + gen.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
 if (DASH.stale) {
+  const n = DASH.uncounted_posts || 0;
+  const extra = n > 0
+    ? ` You've posted <b>${n} more</b> since — ${n === 1 ? "it isn't" : "they aren't"} in the ` +
+      `engagement figures yet, though the post total above is current.`
+    : "";
   const b = $("stale-banner");
   b.hidden = false;
-  b.innerHTML = `<span aria-hidden="true">⚠</span><span><b>Instagram couldn't be reached today.</b> ` +
-    `These grades reflect your account as of <b>${esc(asOf)}</b> — they'll update automatically ` +
+  b.innerHTML = `<span aria-hidden="true">⚠</span><span><b>Instagram's stats API couldn't be reached today.</b> ` +
+    `These grades reflect your account as of <b>${esc(asOf)}</b>.${extra} They'll update automatically ` +
     `on the next successful refresh. Your inbox and deals below are still live.</span>`;
 }
 
