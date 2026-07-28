@@ -265,6 +265,8 @@
     padding: 10px 14px; margin-bottom: 20px; font-size: 13px;
   }
   #stale-banner b { font-weight: 700; }
+  /* `display:flex` above would otherwise defeat the hidden attribute */
+  #stale-banner[hidden] { display: none; }
 
   /* ---------- "what worked" insight ---------- */
   .insight {

@@ -337,9 +337,14 @@ def main() -> None:
     history = load_history()
     fresh = user is not None
     uncounted = 0
+    # A profile JSON passed on the command line is a replay of an earlier fetch,
+    # so it must never be recorded as today's observation — that would invent
+    # data points and distort the growth curve.
+    replay = len(sys.argv) > 1
     if fresh:
         posts = parse_posts(user)
-        history = save_snapshot(history, user, posts)
+        if not replay:
+            history = save_snapshot(history, user, posts)
         followers = user["edge_followed_by"]["count"]
         as_of = now
     elif history:
